@@ -3,6 +3,7 @@ package role
 import (
 	"context"
 	"fmt"
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/gin-gonic/gin"
 	"github.com/shjting0510/sa_user/inits"
 	"github.com/shjting0510/sa_user/models"
@@ -12,6 +13,17 @@ import (
 )
 
 const table = "roles"
+
+func GetRoleByCode(code string) (models.Role, error) {
+	var role models.Role
+	queryUser := `select id, name, code,description from users where code = $1 limit 1`
+	err := pgxscan.Get(context.Background(), inits.GetDB(), &role, queryUser, code)
+	if err != nil && !pgxscan.NotFound(err) {
+		return models.Role{}, err
+	}
+
+	return role, nil
+}
 
 func AddRoute(c *gin.Context) {
 	var form models.Role
@@ -68,5 +80,6 @@ func DelRoute(c *gin.Context) {
 		})
 		return
 	}
+	// TODO 删除用户角色表
 	c.JSON(http.StatusOK, utils.Response{Msg: "删除角色成功"})
 }

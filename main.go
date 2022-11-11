@@ -7,17 +7,18 @@ import (
 )
 
 const (
-	userName = "postgres"
-	password = "123456"
-	host     = "192.168.1.7"
-	port     = 5432
-	dbname   = "example"
+	DbUserName = "postgres"
+	DbPassword = "123456"
+	DbHost     = "192.168.1.7"
+	DbPort     = 5432
+	DbDbname   = "example"
 )
 
 func main() {
 	r := gin.Default()
 	inits.InitLogger("./logs")
-	inits.InitDB(userName, password, host, port, dbname)
+	inits.InitDB(DbUserName, DbPassword, DbHost, DbPort, DbDbname)
 	r.POST("/login", auth.Login)
+	r.GET("/authorize", auth.CheckPermission)
 	r.Run(":8080")
 }

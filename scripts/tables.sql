@@ -24,7 +24,7 @@ create table permissions (
 );
 
 create table roles_permissions (
-    id serial primary key,
-    role_id INT not null,
-    permission_id int not null
+   id serial primary key,
+   role_code varchar(50) not null,
+   permission_code varchar(50) not null
 );
