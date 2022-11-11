@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
+	"github.com/shjting0510/sa_user/inits"
 	"github.com/shjting0510/sa_user/pkg/user"
 	"github.com/shjting0510/sa_user/utils"
 	log "github.com/sirupsen/logrus"
@@ -36,20 +37,24 @@ func Login(c *gin.Context) {
 		SetBody(fmt.Sprintf(`{"userName":"%s", "password":"%s"}`, form.UserName, form.Password)).
 		Post(loginUri)
 	if err != nil {
-		log.Error(err)
+		inits.Log.Error(err)
 		c.JSON(http.StatusInternalServerError, utils.Response{Msg: "登录失败"})
 		return
 	}
-
+	if resp.StatusCode() != http.StatusOK {
+		inits.Log.WithFields(log.Fields{}).Error(err)
+		c.JSON(resp.StatusCode(), utils.Response{Msg: "登录失败"})
+		return
+	}
 	var res LoginRes
 	if err := utils.Unmarshal[LoginRes](resp.Body(), &res); err != nil {
-		log.Error(err)
+		inits.Log.Error(err)
 		c.JSON(http.StatusInternalServerError, utils.Response{Msg: "登录失败"})
-	}
-	if resp.StatusCode() != http.StatusOK || !res.Success || len(res.Result.Token) == 0 {
-		c.JSON(http.StatusInternalServerError, utils.Response{Msg: "登录失败"})
-		return
 	}
 
+	if !res.Success || len(res.Result.Token) == 0 {
+		c.JSON(http.StatusBadRequest, utils.Response{Msg: "登录失败:" + res.ErrorInfo})
+		return
+	}
 	c.JSON(http.StatusOK, utils.Response{Msg: "登录成功", Data: map[string]string{"token": res.Result.Token}})
 }

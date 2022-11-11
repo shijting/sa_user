@@ -19,6 +19,6 @@ func main() {
 	inits.InitLogger("./logs")
 	inits.InitDB(DbUserName, DbPassword, DbHost, DbPort, DbDbname)
 	r.POST("/login", auth.Login)
-	r.GET("/authorize", auth.CheckPermission)
+	r.GET("/check_auth", auth.CheckPermission)
 	r.Run(":8080")
 }

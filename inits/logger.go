@@ -15,7 +15,7 @@ func InitLogger(path string) {
 	Log.SetFormatter(&log.JSONFormatter{})
 	fmt.Println("get env", os.Getenv("debug"))
 	if len(os.Getenv("debug")) > 0 {
-		Log.Info("debug env")
+		Log.Info("dev mode")
 		Log.SetLevel(log.DebugLevel)
 	} else {
 		Log.SetLevel(log.ErrorLevel)

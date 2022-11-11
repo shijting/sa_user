@@ -2,6 +2,7 @@ package auth
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/shjting0510/sa_user/inits"
 	"github.com/shjting0510/sa_user/pkg/roles_permissions"
 	"github.com/shjting0510/sa_user/pkg/user"
 	"github.com/shjting0510/sa_user/utils"
@@ -30,8 +31,8 @@ func CheckPermission(c *gin.Context) {
 
 	res, err := user.GetUserInfoByToken(tokenArr[1])
 	if err != nil {
+		inits.Log.Error(err)
 		c.JSON(http.StatusInternalServerError, utils.Response{
-			Code:   0,
 			Msg:    "获取权限失败",
 			Detail: err.Error(),
 		})
@@ -40,8 +41,8 @@ func CheckPermission(c *gin.Context) {
 
 	ok, err := roles_permissions.CheckPermission(res.Result.Roles, action)
 	if err != nil {
+		inits.Log.Error(err)
 		c.JSON(http.StatusInternalServerError, utils.Response{
-			Code:   0,
 			Msg:    "检查权限失败",
 			Detail: err.Error(),
 		})
@@ -49,13 +50,11 @@ func CheckPermission(c *gin.Context) {
 	}
 	if !ok {
 		c.JSON(http.StatusUnauthorized, utils.Response{
-			Code: 0,
-			Msg:  "无操作权限",
+			Msg: "无操作权限",
 		})
 		return
 	}
 	c.JSON(http.StatusOK, utils.Response{
-		Code: 0,
-		Msg:  "权限通过",
+		Msg: "权限通过",
 	})
 }
