@@ -1,7 +1,6 @@
 package inits
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
@@ -12,17 +11,18 @@ var Log *log.Logger
 
 func InitLogger(path string) {
 	Log = log.New()
-	Log.SetFormatter(&log.JSONFormatter{})
-	fmt.Println("get env", os.Getenv("debug"))
+
 	if len(os.Getenv("debug")) > 0 {
-		Log.Info("dev mode")
 		Log.SetLevel(log.DebugLevel)
+		Log.SetFormatter(&log.TextFormatter{})
+		Log.Info("dev mode")
 	} else {
 		Log.SetLevel(log.ErrorLevel)
 		Log.Out = NewFileLogWriter(path, "log")
+		Log.SetFormatter(&log.JSONFormatter{})
 	}
-
 }
+
 func NewFileLogWriter(filePath string, fileName string) io.Writer {
 	var name string
 	if !Exist(filePath) {
@@ -43,9 +43,7 @@ func NewFileLogWriter(filePath string, fileName string) io.Writer {
 
 func Exist(path string) bool {
 	if _, err := os.Stat(path); err != nil {
-		if os.IsExist(err) {
-			return true
-		}
+		return os.IsExist(err)
 	}
 	return false
 }

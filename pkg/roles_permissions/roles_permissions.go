@@ -12,9 +12,36 @@ import (
 	"github.com/shjting0510/sa_user/utils"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
 )
 
 const table = "roles_permissions"
+
+func GetRoleWithPermissionsByRoles(c *gin.Context) {
+	// http://xx.com/permissions_with_roles?roles=admin,sale
+	roles := c.Query("roles")
+	roleArr := strings.Split(roles, ",")
+	if roles == "" || len(roleArr) < 1 {
+		c.JSON(http.StatusBadRequest, utils.Response{
+			Msg:    "获取角色权限列表失败",
+			Detail: "无效参数roles",
+		})
+		inits.Log.Debug(roleArr)
+		return
+	}
+	inits.Log.Debug(roleArr, len(roleArr))
+	res, err := GetPermissionsByRoleCodes(roleArr)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.Response{
+			Msg: "获取角色权限列表失败",
+		})
+		inits.Log.Debug(roleArr)
+		inits.Log.WithFields(log.Fields{"action": "【role_permission.AddRolePermission】"}).Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.Response{Msg: "ok", Data: res})
+}
 
 func AddRolePermission(c *gin.Context) {
 	var form models.RolePermission
@@ -33,6 +60,7 @@ func AddRolePermission(c *gin.Context) {
 			Msg: "绑定权限失败",
 		})
 		inits.Log.WithFields(log.Fields{"action": "【role_permission.AddRolePermission】"}).Error(err)
+		inits.Log.Debug(err)
 		return
 	}
 	if _role.Id == 0 {
@@ -69,12 +97,38 @@ func AddRolePermission(c *gin.Context) {
 		return
 	}
 	if ct.RowsAffected() != 1 {
-		c.JSON(http.StatusInternalServerError, utils.Response{
+		c.JSON(http.StatusBadRequest, utils.Response{
 			Msg: "绑定权限失败",
 		})
 		return
 	}
 	c.JSON(http.StatusOK, utils.Response{Msg: "绑定权限成功"})
+}
+
+// DelRolePermission deletes a record by specify id.
+func DelRolePermission(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, utils.Response{Msg: "删除角色权限失败", Detail: "id 不能为空"})
+		return
+	}
+	ct, err := inits.GetDB().Exec(context.Background(),
+		fmt.Sprintf(`delete from  %s where id = $1`, table), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.Response{
+			Msg: "删除角色权限失败",
+		})
+		inits.Log.WithFields(log.Fields{"action": "【role_permission.DelRolePermission】"}).Error(err)
+		return
+	}
+	if ct.RowsAffected() != 1 {
+		c.JSON(http.StatusBadRequest, utils.Response{
+			Msg:    "删除角色权限失败",
+			Detail: "记录不存在",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, utils.Response{Msg: "删除角色权限成功"})
 }
 
 type RolePermissions struct {
@@ -123,7 +177,6 @@ func GetPermissionsByRoleCodes(roleCodes []string) ([]RolePermissions, error) {
 
 func CheckPermission(roles []string, action string) (bool, error) {
 	flag := false
-
 	res, err := GetPermissionsByRoleCodes(roles)
 	if err != nil {
 		log.Error(err)

@@ -16,8 +16,8 @@ const table = "roles"
 
 func GetRoleByCode(code string) (models.Role, error) {
 	var role models.Role
-	queryUser := `select id, name, code,description from users where code = $1 limit 1`
-	err := pgxscan.Get(context.Background(), inits.GetDB(), &role, queryUser, code)
+	queryStatement := fmt.Sprintf(`select id, name, code,description from %s where code = $1 limit 1`, table)
+	err := pgxscan.Get(context.Background(), inits.GetDB(), &role, queryStatement, code)
 	if err != nil && !pgxscan.NotFound(err) {
 		return models.Role{}, err
 	}

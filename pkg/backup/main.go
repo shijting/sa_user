@@ -29,7 +29,7 @@ func Backup() {
 			if err != nil {
 				quitCh <- struct{}{}
 				inits.Log.WithFields(log.Fields{"action": "backup.Backup"}).Error(err)
-				log.Println(err)
+				inits.Log.Debug(err)
 				return
 			}
 		}
@@ -52,7 +52,7 @@ func Backup() {
 			return
 		}
 		// TODO
-		log.Println(fileName)
+		inits.Log.Info(fileName)
 	})
 
 	c.Start()

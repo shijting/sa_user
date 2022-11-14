@@ -22,7 +22,7 @@ create table permissions (
      parent_id int not null DEFAULT 0,
      description varchar(500) null default ''
 );
-
+create unique index unq_permissions_code on permissions(code);
 create table roles_permissions (
    id serial primary key,
    role_code varchar(50) not null,
