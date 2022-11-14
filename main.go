@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/shjting0510/sa_user/inits"
 	"github.com/shjting0510/sa_user/pkg/auth"
@@ -18,8 +19,13 @@ const (
 
 func main() {
 	r := gin.Default()
+
 	inits.InitLogger("./logs")
 	inits.InitDB(DbUserName, DbPassword, DbHost, DbPort, DbDbname)
+	defer func() {
+		inits.CloseDB(context.Background())
+	}()
+
 	r.POST("/login", auth.Login)
 	r.GET("/check_auth", auth.CheckPermission)
 

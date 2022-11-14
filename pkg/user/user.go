@@ -65,7 +65,7 @@ func Register(c *gin.Context) {
 		})
 	}
 	c.JSON(http.StatusOK, utils.Response{
-		Msg: "注册成功",
+		Msg: "success",
 	})
 }
 
@@ -102,7 +102,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.Response{Msg: "登录成功", Data: token})
+	c.JSON(http.StatusOK, utils.Response{Msg: "success", Data: token})
 }
 
 // GetUserByName gets user's detail by the given username.
@@ -136,18 +136,18 @@ func GetUserInfoByToken(token string) (Info, error) {
 	resp, err := client.R().
 		SetHeader("Authorization", "Bearer "+token).Get(loginUri)
 	if err != nil {
-		log.Error(err)
+		inits.Log.WithFields(log.Fields{"action": "GetUserInfoByToken"}).Error(err)
 		return Info{}, err
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		log.WithFields(log.Fields{"http status code": "resp.StatusCode()"}).Error("获取用户信息失败")
+		inits.Log.WithFields(log.Fields{"http status code": resp.StatusCode()}).Error("获取用户信息失败")
 		return Info{}, errors.New("获取用户信息失败, http status code: " + string(resp.StatusCode()))
 	}
 
 	var res Info
 	if err := utils.Unmarshal[Info](resp.Body(), &res); err != nil {
-		log.WithFields(log.Fields{"unmarshal": "resp.StatusCode()"}).Error(err)
+		inits.Log.WithFields(log.Fields{"unmarshal": "resp.StatusCode()"}).Error(err)
 		return Info{}, err
 	}
 	return res, nil

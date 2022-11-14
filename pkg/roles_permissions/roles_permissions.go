@@ -35,12 +35,11 @@ func GetRoleWithPermissionsByRoles(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, utils.Response{
 			Msg: "获取角色权限列表失败",
 		})
-		inits.Log.Debug(roleArr)
 		inits.Log.WithFields(log.Fields{"action": "【role_permission.AddRolePermission】"}).Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.Response{Msg: "ok", Data: res})
+	c.JSON(http.StatusOK, utils.Response{Msg: "success", Data: res})
 }
 
 func AddRolePermission(c *gin.Context) {
@@ -81,7 +80,7 @@ func AddRolePermission(c *gin.Context) {
 	}
 	if _permission.Id == 0 {
 		c.JSON(http.StatusBadRequest, utils.Response{
-			Msg: "权限不存在",
+			Msg: "该权限不存在",
 		})
 		inits.Log.WithFields(log.Fields{"action": "【role_permission.AddRolePermission】"}).Debug(err)
 		return
@@ -102,7 +101,7 @@ func AddRolePermission(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, utils.Response{Msg: "绑定权限成功"})
+	c.JSON(http.StatusOK, utils.Response{Msg: "success"})
 }
 
 // DelRolePermission deletes a record by specify id.
@@ -128,7 +127,7 @@ func DelRolePermission(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, utils.Response{Msg: "删除角色权限成功"})
+	c.JSON(http.StatusOK, utils.Response{Msg: "success"})
 }
 
 type RolePermissions struct {
@@ -143,6 +142,7 @@ func GetPermissionsByRoleCodes(roleCodes []string) ([]RolePermissions, error) {
 		queryUser := fmt.Sprintf(`select id, role_code, permission_code from %s where role_code=$1`, table)
 		err := pgxscan.Select(context.Background(), inits.GetDB(), &rps, queryUser, roleCode)
 		if err != nil && !pgxscan.NotFound(err) {
+			inits.Log.WithFields(log.Fields{"action": "roles_permissions.GetPermissionsByRoleCodes"}).Error(err)
 			return nil, err
 		}
 
@@ -153,7 +153,7 @@ func GetPermissionsByRoleCodes(roleCodes []string) ([]RolePermissions, error) {
 			queryUser := fmt.Sprintf(`select id, name, code, description, action, parent_id from %s where code=$1`, "permissions")
 			err := pgxscan.Get(context.Background(), inits.GetDB(), &_permission, queryUser, rolePermission.PermissionCode)
 			if err != nil && !pgxscan.NotFound(err) {
-				fmt.Println("_permission:", err)
+				inits.Log.WithFields(log.Fields{"action": "roles_permissions.GetPermissionsByRoleCodes"}).Error(err)
 				return nil, err
 			}
 			permissions = append(permissions, _permission)
@@ -163,6 +163,7 @@ func GetPermissionsByRoleCodes(roleCodes []string) ([]RolePermissions, error) {
 		_role := models.Role{}
 		err = pgxscan.Get(context.Background(), inits.GetDB(), &_role, fmt.Sprintf(`select id, name, code, description from %s where code=$1`, "roles"), roleCode)
 		if err != nil && !pgxscan.NotFound(err) {
+			inits.Log.WithFields(log.Fields{"action": "roles_permissions.GetPermissionsByRoleCodes"}).Error(err)
 			return nil, err
 		}
 		rp := RolePermissions{
@@ -179,7 +180,7 @@ func CheckPermission(roles []string, action string) (bool, error) {
 	flag := false
 	res, err := GetPermissionsByRoleCodes(roles)
 	if err != nil {
-		log.Error(err)
+		inits.Log.WithFields(log.Fields{"action": "roles_permissions.CheckPermission"}).Error(err)
 		return flag, err
 	}
 	rules := make([]string, 0)

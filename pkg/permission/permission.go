@@ -51,7 +51,7 @@ func GetPermissions(c *gin.Context) {
 	}
 
 	err = pgxscan.Get(context.Background(), inits.GetDB(), &res.Count, fmt.Sprintf(`select count(*) as count from %s`, table))
-	if err != nil {
+	if err != nil && !pgxscan.NotFound(err) {
 		inits.Log.Debug("err:", err)
 		inits.Log.WithFields(log.Fields{"action": "【permission.GetPermissions】"}).Error(err)
 		c.JSON(http.StatusInternalServerError, utils.Response{
@@ -104,17 +104,12 @@ func AddPermission(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, utils.Response{Msg: "添加权限成功"})
+	c.JSON(http.StatusOK, utils.Response{Msg: "success"})
 }
 
 type EditPermissionForm struct {
 	Id int `json:"id" form:"id" binding:"required"`
 	models.Permission
-	//Name        string `json:"name" form:"name"`
-	//Code        string `json:"code" form:"code" binding:"required,min=1,max=30"`
-	//Description string `json:"description"`
-	//Action      string `json:"action" form:"action" binding:"required,min=1,max=50"`
-	//ParentID    int    `json:"parent_id" form:"parent_id"`
 }
 
 func EditPermission(c *gin.Context) {
@@ -148,7 +143,7 @@ func EditPermission(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, utils.Response{Msg: "修改权限成功"})
+	c.JSON(http.StatusOK, utils.Response{Msg: "success"})
 }
 
 func DelPermission(c *gin.Context) {
@@ -176,5 +171,5 @@ func DelPermission(c *gin.Context) {
 		return
 	}
 	// TODO 删除角色权限表
-	c.JSON(http.StatusOK, utils.Response{Msg: "删除权限成功"})
+	c.JSON(http.StatusOK, utils.Response{Msg: "success"})
 }

@@ -22,6 +22,7 @@ func Backup() {
 
 	c := cron.New()
 	defer c.Stop()
+
 	c.AddFunc("@daily", func() {
 		exit, _ := PathExists(path)
 		if !exit {

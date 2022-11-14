@@ -52,7 +52,7 @@ func AddRoute(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, utils.Response{Msg: "成功"})
+	c.JSON(http.StatusOK, utils.Response{Msg: "success"})
 }
 
 func DelRoute(c *gin.Context) {
@@ -81,5 +81,5 @@ func DelRoute(c *gin.Context) {
 		return
 	}
 	// TODO 删除用户角色表
-	c.JSON(http.StatusOK, utils.Response{Msg: "删除角色成功"})
+	c.JSON(http.StatusOK, utils.Response{Msg: "success"})
 }

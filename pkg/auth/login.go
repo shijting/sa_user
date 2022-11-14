@@ -56,5 +56,5 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, utils.Response{Msg: "登录失败:" + res.ErrorInfo})
 		return
 	}
-	c.JSON(http.StatusOK, utils.Response{Msg: "登录成功", Data: map[string]string{"token": res.Result.Token}})
+	c.JSON(http.StatusOK, utils.Response{Msg: "success", Data: res.Result})
 }
